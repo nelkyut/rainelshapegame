@@ -35,15 +35,16 @@
     }
 
     .shape {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      cursor: grab;
-      touch-action: none;
-      border: 2px solid black;
-      box-sizing: border-box;
-      z-index: 10;
-    }
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  cursor: grab;
+  touch-action: none;
+  box-sizing: border-box;
+  z-index: 10;
+  box-shadow: 0 0 0 2px black; /* black "border" that works even on clip-path */
+  transition: transform 0.2s;
+}
 
     .dropzone-area {
       display: flex;
