@@ -9,15 +9,16 @@
       margin: 0;
       padding: 0;
       font-family: Comic Sans MS, cursive;
-      background: url('rainel.jpg') no-repeat center center fixed;
       background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       touch-action: none;
     }
 
     h1 {
       text-align: center;
       color: #ff7043;
-      background-color: transparent;
+      background-color: rgba(255,255,255,0.6);
       margin: 0;
       padding: 15px;
       font-size: 24px;
@@ -104,12 +105,11 @@
   </style>
 </head>
 <body>
-  <h1 id="levelTitle">🎯 Rainel Shape Match Game - Level 1</h1>
+  <h1>🎯 Rainel Shape Match Game!</h1>
 
   <div class="playground" id="playground"></div>
   <div class="dropzone-area" id="dropzone-area"></div>
-
-  <button class="restart-btn" onclick="restartGame()">🔁 Restart Game</button>
+  <button class="restart-btn" onclick="createGame()">🔁 Restart Game</button>
 
   <script>
     const shapesList = [
@@ -118,33 +118,32 @@
       'parallelogram', 'cloud', 'flower'
     ];
 
-    let currentLevel = 1;
-    const maxShapes = shapesList.length;
-
+    let currentLevel = 0;
     const playground = document.getElementById("playground");
     const dropzoneArea = document.getElementById("dropzone-area");
-    const levelTitle = document.getElementById("levelTitle");
 
     function getRandomColor() {
       const letters = '0123456789ABCDEF';
       return '#' + Array.from({length: 6}, () => letters[Math.floor(Math.random() * 16)]).join('');
     }
 
-    function restartGame() {
-      currentLevel = 1;
-      createGame();
+    function setBackgroundByLevel(level) {
+      const bgIndex = (level % 16) + 1; // 1 to 16
+      document.body.style.backgroundImage = `url('bg${bgIndex}.jpg')`;
     }
 
     function createGame() {
       playground.innerHTML = '';
       dropzoneArea.innerHTML = '';
-      levelTitle.textContent = `🎯 Rainel Shape Match Game - Level ${currentLevel}`;
+      currentLevel++;
+      setBackgroundByLevel(currentLevel);
 
-      const shapeCount = Math.min(3 + (currentLevel - 1) * 2, maxShapes); // e.g. 3, 5, 7, 9...
-      const selectedShapes = shapesList.slice(0, shapeCount);
+      const selectedShapes = shapesList.slice(0, Math.min(currentLevel + 2, shapesList.length));
+      const colorMap = {};
 
       selectedShapes.forEach(shape => {
         const color = getRandomColor();
+        colorMap[shape] = color;
 
         const dz = document.createElement("div");
         dz.classList.add("dropzone", shape);
@@ -205,9 +204,9 @@
             matched = true;
             shapeEl.remove();
 
+            // If all shapes are removed, go to next level
             setTimeout(() => {
-              if (playground.children.length === 0) {
-                currentLevel++;
+              if (document.querySelectorAll('.shape').length === 0) {
                 createGame();
               }
             }, 300);
