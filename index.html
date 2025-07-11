@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rainel Shape Match Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Comic Sans MS, cursive;
+      background: url('https://i.postimg.cc/RCyYcHr2/rainel.png') no-repeat center center fixed;
+      background-size: cover;
+      touch-action: none;
+    }
+
+    h1 {
+      text-align: center;
+      color: #ff7043;
+      background-color: transparent;
+      margin: 0;
+      padding: 15px;
+      font-size: 24px;
+    }
+
+    .playground {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      border: 3px dashed #ccc;
+      margin: 20px auto;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    .shape {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      cursor: grab;
+      touch-action: none;
+      border: 2px solid white;
+      box-sizing: border-box;
+      z-index: 10;
+    }
+
+    .dropzone-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+      background-color: transparent;
+      margin-bottom: 20px;
+      min-height: 100px;
+    }
+
+    .dropzone {
+      width: 60px;
+      height: 60px;
+      position: relative;
+      border: 2px solid white;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .restart-btn {
+      display: block;
+      margin: 10px auto 30px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #ff7043;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .correct {
+      border: 2px solid green !important;
+      background-color: #c8f7c5 !important;
+    }
+
+    .wrong {
+      border: 2px solid red !important;
+      background-color: #f7c5c5 !important;
+    }
+
+    /* Shape styles */
+    .circle       { border-radius: 50%; }
+    .square       { }
+    .triangle     { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+    .star         { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+    .heart        { clip-path: path('M 30 58 C 10 38, 10 15, 30 20 C 50 15, 50 38, 30 58 Z'); }
+    .oval         { border-radius: 50% / 30%; }
+    .pentagon     { clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); }
+    .diamond      { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+    .moon         { clip-path: ellipse(60% 100% at 40% 50%); }
+    .trapezoid    { clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%); }
+    .parallelogram{ clip-path: polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%); }
+    .cloud        { border-radius: 50%; }
+    .flower       { clip-path: circle(40% at 50% 50%); }
+  </style>
+</head>
+<body>
+  <h1>🎯 Rainel Shape Match Game!</h1>
+
+  <div class="playground" id="playground"></div>
+  <div class="dropzone-area" id="dropzone-area"></div>
+
+  <button class="restart-btn" onclick="createGame()">🔁 Restart Game</button>
+
+  <script>
+    const shapesList = [
+      'circle', 'square', 'triangle', 'star', 'heart',
+      'oval', 'pentagon', 'diamond', 'moon', 'trapezoid',
+      'parallelogram', 'cloud', 'flower'
+    ];
+
+    const playground = document.getElementById("playground");
+    const dropzoneArea = document.getElementById("dropzone-area");
+
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    function createGame() {
+      playground.innerHTML = '';
+      dropzoneArea.innerHTML = '';
+
+      const colorMap = {};
+      const selectedShapes = [...shapesList];
+
+      selectedShapes.forEach(shape => {
+        const color = getRandomColor();
+        colorMap[shape] = color;
+
+        const dz = document.createElement("div");
+        dz.classList.add("dropzone", shape);
+        dz.setAttribute("data-shape", shape);
+        dz.style.backgroundColor = color;
+        dropzoneArea.appendChild(dz);
+
+        const el = document.createElement("div");
+        el.classList.add("shape", shape);
+        el.setAttribute("data-shape", shape);
+        el.style.left = Math.floor(Math.random() * (window.innerWidth - 80)) + "px";
+        el.style.top = Math.floor(Math.random() * 300) + "px";
+        el.style.backgroundColor = color;
+        el.dataset.origLeft = el.style.left;
+        el.dataset.origTop = el.style.top;
+
+        let offsetX, offsetY;
+        el.addEventListener("touchstart", e => {
+          const touch = e.touches[0];
+          offsetX = touch.clientX - el.offsetLeft;
+          offsetY = touch.clientY - el.offsetTop;
+          el.style.zIndex = 9999;
+          el.style.transition = 'none';
+        });
+
+        el.addEventListener("touchmove", e => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          el.style.left = (touch.clientX - offsetX) + "px";
+          el.style.top = (touch.clientY - offsetY) + "px";
+        });
+
+        el.addEventListener("touchend", () => {
+          checkDrop(el);
+        });
+
+        playground.appendChild(el);
+      });
+    }
+
+    function checkDrop(shapeEl) {
+      const shape = shapeEl.dataset.shape;
+      const rect1 = shapeEl.getBoundingClientRect();
+      let matched = false;
+
+      document.querySelectorAll(".dropzone").forEach(drop => {
+        const rect2 = drop.getBoundingClientRect();
+        const isOverlap = !(
+          rect1.right < rect2.left ||
+          rect1.left > rect2.right ||
+          rect1.bottom < rect2.top ||
+          rect1.top > rect2.bottom
+        );
+
+        if (isOverlap) {
+          if (drop.dataset.shape === shape) {
+            drop.classList.add("correct");
+            matched = true;
+            shapeEl.remove();
+          } else {
+            drop.classList.add("wrong");
+            setTimeout(() => drop.classList.remove("wrong"), 1000);
+          }
+        }
+      });
+
+      if (!matched) {
+        shapeEl.style.transition = "all 0.3s ease";
+        shapeEl.style.left = shapeEl.dataset.origLeft;
+        shapeEl.style.top = shapeEl.dataset.origTop;
+      }
+    }
+
+    createGame();
+  </script>
+</body>
+</html>
