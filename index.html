@@ -104,12 +104,12 @@
   </style>
 </head>
 <body>
-  <h1>🎯 Rainel Shape Match Game!</h1>
+  <h1 id="levelTitle">🎯 Rainel Shape Match Game - Level 1</h1>
 
   <div class="playground" id="playground"></div>
   <div class="dropzone-area" id="dropzone-area"></div>
 
-  <button class="restart-btn" onclick="createGame()">🔁 Restart Game</button>
+  <button class="restart-btn" onclick="restartGame()">🔁 Restart Game</button>
 
   <script>
     const shapesList = [
@@ -118,28 +118,33 @@
       'parallelogram', 'cloud', 'flower'
     ];
 
+    let currentLevel = 1;
+    const maxShapes = shapesList.length;
+
     const playground = document.getElementById("playground");
     const dropzoneArea = document.getElementById("dropzone-area");
+    const levelTitle = document.getElementById("levelTitle");
 
     function getRandomColor() {
       const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
+      return '#' + Array.from({length: 6}, () => letters[Math.floor(Math.random() * 16)]).join('');
+    }
+
+    function restartGame() {
+      currentLevel = 1;
+      createGame();
     }
 
     function createGame() {
       playground.innerHTML = '';
       dropzoneArea.innerHTML = '';
+      levelTitle.textContent = `🎯 Rainel Shape Match Game - Level ${currentLevel}`;
 
-      const colorMap = {};
-      const selectedShapes = [...shapesList];
+      const shapeCount = Math.min(3 + (currentLevel - 1) * 2, maxShapes); // e.g. 3, 5, 7, 9...
+      const selectedShapes = shapesList.slice(0, shapeCount);
 
       selectedShapes.forEach(shape => {
         const color = getRandomColor();
-        colorMap[shape] = color;
 
         const dz = document.createElement("div");
         dz.classList.add("dropzone", shape);
@@ -199,6 +204,13 @@
             drop.classList.add("correct");
             matched = true;
             shapeEl.remove();
+
+            setTimeout(() => {
+              if (playground.children.length === 0) {
+                currentLevel++;
+                createGame();
+              }
+            }, 300);
           } else {
             drop.classList.add("wrong");
             setTimeout(() => drop.classList.remove("wrong"), 1000);
