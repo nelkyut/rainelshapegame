@@ -40,7 +40,7 @@
       height: 60px;
       cursor: grab;
       touch-action: none;
-      border: 2px solid white;
+      border: 2px solid black;
       box-sizing: border-box;
       z-index: 10;
     }
@@ -128,7 +128,7 @@
     }
 
     function setBackgroundByLevel(level) {
-      const bgIndex = (level % 16) + 1; // 1 to 16
+      const bgIndex = (level % 16) + 1;
       document.body.style.backgroundImage = `url('bg${bgIndex}.jpg')`;
     }
 
@@ -204,7 +204,6 @@
             matched = true;
             shapeEl.remove();
 
-            // If all shapes are removed, go to next level
             setTimeout(() => {
               if (document.querySelectorAll('.shape').length === 0) {
                 createGame();
